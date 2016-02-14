@@ -1,4 +1,13 @@
 <resources>
-    <string name="app_name">TrackMe</string>
-    <string name="title_activity_track_me">TrackMe</string>
+    <string name="app_name">Track Me</string>
+    <string name="title_activity_track_me">Track Me</string>
+    <string name="locateme">Locate Me</string>
+    <string name="trackme">Track Me</string>
+    <string name="share">Share my Location</string>
+    <string name="myoptions">Share My Location</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
