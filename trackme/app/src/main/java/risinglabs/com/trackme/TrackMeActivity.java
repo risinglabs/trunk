@@ -1,7 +1,6 @@
 package risinglabs.com.trackme;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
@@ -31,7 +30,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCallback,
         View.OnClickListener,
-        GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnMarkerClickListener,
+        DialogCallbacks {
 
     private GoogleMap mMap;
     private Button trackButton;
@@ -39,6 +39,7 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
     private MarkerOptions markerOptions;
     private ShareActionProvider mShareActionProvider;
     private TrackOptionsDialog optionsDialog;
+    private GoogleMapInstance instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,8 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        instance = GoogleMapInstance.getInstance();
     }
 
 
@@ -71,6 +74,9 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        //Saving Google map Obj in Utility Singleton class
+        instance.saveGoogleMapObj(mMap, this);
 
         //Get my location
         LocationManager locationManager = (LocationManager)
@@ -108,11 +114,7 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
                 return true;
 
             case R.id.menu_item_share:
-                Intent sendIntent = new Intent();
-                sendIntent.setAction(Intent.ACTION_SEND);
-                sendIntent.setType("text/plain");
-                sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
-                setShareIntent(sendIntent);
+                setShareIntent();
                 return true;
 
             default:
@@ -145,7 +147,7 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
         // Add a circle in Sydney
         Circle circle = mMap.addCircle(new CircleOptions()
                 .center(mylatLong)
-                .radius(10)
+                .radius(50)
                 .strokeColor(Color.RED)
                 .fillColor(Color.TRANSPARENT));
 
@@ -157,7 +159,7 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
                         .position(mylatLong)
                         .title("My Location")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mylatLong, 16));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mylatLong, 10));
 
         mMap.setMyLocationEnabled(false);
         mMap.setOnMarkerClickListener(this);
@@ -165,18 +167,25 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     // Call to update the share intent
-    private void setShareIntent(Intent shareIntent) {
+    private void setShareIntent() {
         if (mShareActionProvider != null) {
             Toast.makeText(this, "This is share", Toast.LENGTH_LONG).show();
-            mShareActionProvider.setShareIntent(shareIntent);
+            instance.takeSnapshot();
+            //mShareActionProvider.setShareIntent(shareIntent);
         }
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
         //Toast.makeText(this, "This is my Location", Toast.LENGTH_LONG).show();
-        optionsDialog = new TrackOptionsDialog();
+        optionsDialog = new TrackOptionsDialog(this);
         optionsDialog.show(getSupportFragmentManager(), "Options");
         return true;
+    }
+
+
+    @Override
+    public void onItemSelected(int which) {
+       GoogleMapInstance.getInstance().takeSnapshot();
     }
 }
