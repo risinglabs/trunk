@@ -1,6 +1,7 @@
 package risinglabs.com.trackme;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
@@ -194,11 +195,15 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
 
     @Override
     public void onItemSelected(int which) {
-        Log.i(TAG, "onItemSelected "+which);
+        Log.i(TAG, "onItemSelected " + which);
 
-        //If Track me then start an activity
-
-        GoogleMapInstance.getInstance().takeSnapshot();
+        if(which == 0){
+            //If Track me then start an activity
+            Intent intent = new Intent(this, LiveTrackingActivity.class);
+            startActivity(intent);
+        }else{
+            GoogleMapInstance.getInstance().takeSnapshot();
+        }
     }
 
 //    @Override
