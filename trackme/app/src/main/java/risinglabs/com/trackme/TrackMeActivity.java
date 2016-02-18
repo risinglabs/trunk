@@ -10,6 +10,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -31,7 +33,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCallback,
         View.OnClickListener,
         GoogleMap.OnMarkerClickListener,
-        DialogCallbacks {
+        DialogCallbacks,
+        LocationSource {
 
     private GoogleMap mMap;
     private Button trackButton;
@@ -40,6 +43,8 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
     private ShareActionProvider mShareActionProvider;
     private TrackOptionsDialog optionsDialog;
     private GoogleMapInstance instance;
+    private OnLocationChangedListener mChangeListner;
+    public static String TAG = "TrackMeActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +136,7 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
         trackButton.setVisibility(View.GONE);
 
         // Add a marker in Sydney and move the camera
+        //TODO: Check for null on myLocation
         LatLng mylatLong = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
 
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -159,10 +165,12 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
                         .position(mylatLong)
                         .title("My Location")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mylatLong, 10));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mylatLong, 14));
 
         mMap.setMyLocationEnabled(false);
         mMap.setOnMarkerClickListener(this);
+        mMap.setLocationSource(this);
+
 
     }
 
@@ -186,6 +194,25 @@ public class TrackMeActivity extends AppCompatActivity implements OnMapReadyCall
 
     @Override
     public void onItemSelected(int which) {
-       GoogleMapInstance.getInstance().takeSnapshot();
+        Log.i(TAG, "onItemSelected "+which);
+
+        //If Track me then start an activity
+
+        GoogleMapInstance.getInstance().takeSnapshot();
+    }
+
+//    @Override
+//    public void onLocationChanged(Location location) {
+//        Toast.makeText(getApplicationContext(), "Altitute "+location.getAltitude(), Toast.LENGTH_LONG).show();
+//    }
+
+    @Override
+    public void activate(OnLocationChangedListener onLocationChangedListener) {
+        mChangeListner = onLocationChangedListener;
+    }
+
+    @Override
+    public void deactivate() {
+        mChangeListner = null;
     }
 }
